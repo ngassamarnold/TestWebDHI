@@ -46,6 +46,8 @@
                             @endforeach
                         </tbody>
                       </table>
+                      {{ $commandes->links() }}
+
                 </div>
             </div>
         </div>
