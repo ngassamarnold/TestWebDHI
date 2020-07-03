@@ -19,7 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::get('/produits', 'ProduitsController@index');
 Route::post('/ajouter-cmd', 'CommandesController@store');
-Route::post('/valider-cmd', 'CommandesController@valider');
+Route::post('/callback', 'CommandesController@callback');
 Route::post('/echec-cmd', 'CommandesController@valider');
 
 

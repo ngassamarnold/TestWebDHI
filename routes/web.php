@@ -23,10 +23,16 @@ Route::get('/echec', function () {
 Auth::routes();
 
 Route::get('/', 'HomeController@index')->name('home');
+Route::group(['middleware'=>'auth'],function (){
+        Route::get('/add-products', 'ProduitsController@create')->name('ProduitsCreate');
+        Route::post('/save-products', 'ProduitsController@store')->name('Produitstore');
+        Route::get('/liste-commandes-non-livre', 'CommandesController@index')->name('ListCommandesNonLivre');
+        Route::get('/livrer-cmd/{reference}', 'CommandesController@livrer')->name('livrerCommandes');
 
-Route::get('/add-products', 'ProduitsController@create')->name('ProduitsCreate')->middleware('auth');
-Route::post('/save-products', 'ProduitsController@store')->name('Produitstore')->middleware('auth');
+        Route::get('/liste-commandes-livre', 'CommandesController@indexLivre')->name('ListCommandesLivre');
 
+        Route::get('/produits', 'ProduitsController@ListProduct')->name('produits');
+});
 
 
 

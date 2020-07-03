@@ -11,7 +11,7 @@ use Session;
 class ProduitsController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lister les produits coté api
      *
      * @return \Illuminate\Http\Response
      */
@@ -23,6 +23,19 @@ class ProduitsController extends Controller
         return response()->json(
              $produits
         );
+    }
+
+    /**
+     * Lister les produits coté web
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function ListProduct()
+    {
+      //  return view('commandes.echec');
+        $produits = Produits::orderBy('id', 'DESC')->get();
+        return view('produits.list', compact('produits'));
+
     }
 
     /**

@@ -8,14 +8,44 @@ use Illuminate\Http\Request;
 class CommandesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Fonction pour afficher les commandes non livrés.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        //
+      $commandes = Commandes::orderBy('id', 'DESC')
+        ->where('livre', false)
+        ->where('transaction_status', "SUCCESS")        ->paginate(4);
+      return view('commandes.list', compact('commandes'));
     }
+    /**
+     * Fonction pour afficher les commandes  livrés.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexLivre()
+    {
+      $commandes = Commandes::orderBy('id', 'DESC')
+        ->where('livre', true)
+        ->where('transaction_status', "SUCCESS")        ->paginate(4);
+      return view('commandes.listLivre', compact('commandes'));
+    }
+
+    /**
+     * Fonction pour valider la livraison d'une commande
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function livrer( $id){
+        $commande = Commandes::where('id', $id)->first();
+        $commande->livre=true;
+        if($commande->save()) return  redirect()->route("ListCommandesNonLivre")->with("success", "Produit marqué livré");
+
+        else return  redirect()->route("ListCommandesNonLivre")->with("error", "erreur veillez réeseillez!!!");
+    }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -28,7 +58,7 @@ class CommandesController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Enregistrer une commande
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -54,21 +84,31 @@ class CommandesController extends Controller
         return $request ;
     }
     /**
-     * Valider a newly created resource in storage.
+     * Fonction callback appelé après le paiement
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function valider(Request $request)
+    public function callback(Request $request)
     {
         $request->validate([
-            'reference' => ['required', 'string'],
+            'app_transaction_ref' => ['required', 'string'],
+            'transaction_status' => ['required', 'string'],
         ]);
-        $cmd = Commandes::where('reference', $request->reference)
+        $cmd = Commandes::where('reference', $request->app_transaction_ref)
                ->first();
         if($cmd){
-             $cmd->estvalide=true;
-             if( $cmd->save())return response()->json(["success"=>true]); //return view('commandes.paiement');
+            $request->transaction_status==="SUCCESS"?$cmd->estvalide=true:true;
+            $cmd->operator_transaction_ref=$request->operator_transaction_ref;
+            $cmd->transaction_ref=$request->transaction_ref;
+            $cmd->transaction_type=$request->transaction_type;
+            $cmd->transaction_amount=$request->transaction_amount;
+            $cmd->transaction_currency=$request->transaction_currency;
+            $cmd->transaction_status=$request->transaction_status;
+            $cmd->transaction_reason=$request->transaction_reason;
+            $cmd->customer_phone_number=$request->customer_phone_number;
+            $cmd->signature=$request->signature;
+            if( $cmd->save())return response()->json(["success"=>true]); //return view('commandes.paiement');
             // return response()->json(["success"=>true]);
         }
         return response()->json([], 500);
